@@ -8,9 +8,10 @@ te = TransactionEncoder()
 
 @bp.route("/market_basket_analysis", methods=["GET", "POST"])
 def market_basket_analysis():
-    if request.method =="POST":
+
+    if request.method == "POST":
         # Mendapatkan semua file yang diupload
-        uploaded_files = request.files.getlist("files")
+        uploaded_files = request.files.getlist("file")
         # Memastikan setidaknya ada sclatu file yang diupload
         if len(uploaded_files) == 0:
             flash("Harap upload minimal satu file.", 'error')
@@ -18,15 +19,17 @@ def market_basket_analysis():
         
         # Menggabungkan semua file
         df = pd.DataFrame()
+        data_list = list()
         for uploaded_file in uploaded_files:
             if uploaded_file.filename != "":
                 try:
                     new_df = pd.read_csv(uploaded_file, sep="\t")
-                    df = df.append(new_df)
+                    data_list.append(new_df)
                 except Exception as e:
                     flash(f"Error membaca file: {e}", 'error')
-        
-        # Check if any data was uploaded after potential errors
+        df = pd.concat(data_list, axis=0, ignore_index=True)
+        df.to_csv('test.csv')
+
         if df.empty:
             flash("No valid data found in uploaded files.", 'error')
             return redirect(url_for('market_basket_analysis.market_basket_analysis'))
